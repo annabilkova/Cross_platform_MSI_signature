@@ -1,0 +1,156 @@
+---
+title: "CROSS-PLATFORM GENE EXPRESSION SIGNATURE FOR MICROASATELLITE INSTABILITY IN COLORECTAL CANCER"
+output:
+  html_document:
+    fig_height: 8
+    fig_width: 10
+    self_contained: no
+    toc: yes
+    toc_depth: 2
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  word_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+
+# DATA LOADING
+
+```{r echo=TRUE, include=TRUE}
+
+load("workspace.RData")
+
+```
+
+
+# CROSS-PLATFORM SIGNATURE DISCOVERY
+
+
+```{r echo=TRUE, include=FALSE}
+
+source("MSI_signature_discovery/signature_discovery.R")
+signature_discovery_output <- signature_discovery(DEGs_RNAseq_expr = DEGs_A1development,
+                                                       microarray_expr = A2development_expression_QN,
+                                                       MS_status_RNAseq = MS_status_A1development,
+                                                       MS_status_microarray = MS_status_A2development,
+                                                       Tian = signature_Tian_entrez,
+                                                       Lanza = signature_Lanza_entrez,
+                                                       Kruhoffer = signature_Kruhoffer_entrez,
+                                                       Giacomini = signature_Giacomini_entrez)
+
+```
+
+```{r echo=TRUE, include=TRUE}
+
+signature_discovery_output
+
+```
+
+
+
+# CROSS-PLATFORM SIGNATURE PERFORMANCE EVALUATION
+
+
+```{r echo=TRUE, include=FALSE}
+
+source("MSI_signature_CV/NC_cross_platform_CV.R")
+
+nearest_centroid_class_CV_output <- NC_cross_platform_CV(microarray_expr = A2development_expression,
+                                                              RNAseq_expr = A1development_counts,
+                                                              MS_status_microarray = MS_status_A2development,
+                                                              MS_status_RNAseq = MS_status_A1development,
+                                                              Tian = signature_Tian_entrez,
+                                                              Lanza = signature_Lanza_entrez,
+                                                              Kruhoffer = signature_Kruhoffer_entrez,
+                                                              Giacomini = signature_Giacomini_entrez,
+                                                              lfc = 1,
+                                                              adj_p_val_DEGs = 0.05,
+                                                              K = 10,
+                                                              batch_RNAseq = batch_A1development)
+
+```
+
+```{r echo=TRUE, include=TRUE}
+
+nearest_centroid_class_CV_output$AUC_RNAseq
+nearest_centroid_class_CV_output$AUC_microarray
+
+```
+
+
+# CROSS-PLATFORM SIGNATURE INDEPENDENT VALIDATION
+
+
+## B1 validation cohort
+
+```{r echo=TRUE, include=TRUE}
+
+source("MSI_signature_validation/MSI_signature_validation.R")
+
+MSI_siganture_validation_microarray_output1 <- MSI_siganture_validation(expr_matrix = B1validation_expression, 
+                                                                        MS_status = MS_status_B1validation, 
+                                                                        signature_discovery_output = signature_discovery_output, 
+                                                                        platform="microarray")
+MSI_siganture_validation_microarray_output1$ROC_pROC
+
+```
+
+
+## B2 validation cohort
+
+```{r echo=TRUE, include=TRUE}
+
+MSI_siganture_validation_microarray_output2 <- MSI_siganture_validation(expr_matrix = B2validation_expression, 
+                                                                        MS_status = MS_status_B2validation, 
+                                                                        signature_discovery_output = signature_discovery_output, 
+                                                                        platform="microarray")
+MSI_siganture_validation_microarray_output2$ROC_pROC
+
+```
+
+
+## C1 validation cohort
+
+```{r echo=TRUE, include=TRUE}
+
+MSI_siganture_validation_RNAseq_output1 <- MSI_siganture_validation(expr_matrix = C1validation_expression, 
+                                                                    MS_status = MS_status_C1validation, 
+                                                                    signature_discovery_output = signature_discovery_output, 
+                                                                    platform="RNAseq")
+MSI_siganture_validation_RNAseq_output1$ROC_pROC
+
+```
+
+
+## C2 validation cohort
+
+```{r echo=TRUE, include=TRUE}
+
+MSI_siganture_validation_microarray_output3 <- MSI_siganture_validation(expr_matrix = C2validation_expression, 
+                                                                        MS_status = MS_status_C2validation, 
+                                                                        signature_discovery_output = signature_discovery_output, 
+                                                                        platform="microarray")
+MSI_siganture_validation_microarray_output3$ROC_pROC
+
+```
+
+
+## D1 validation cohort
+
+```{r echo=TRUE, include=TRUE}
+
+MSI_siganture_validation_RNAseq_output3 <- MSI_siganture_validation(expr_matrix = D1validation_expression, 
+                                                                    MS_status = MS_status_D1validation, 
+                                                                    signature_discovery_output = signature_discovery_output, 
+                                                                    platform="RNAseq")
+MSI_siganture_validation_RNAseq_output3$ROC_pROC
+
+```
+
+
+
+
+
